@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use SynPV or a dataset generated with it, please cite the paper and the software."
+title: "SynPV: A Physics-Based Synthetic Dataset of Residential Rooftop PV Generation with Spatially Correlated Cloud Variability"
+type: software
+version: 1.0.0
+date-released: 2026-10-28
+license: MIT
+repository-code: "https://github.com/YOUR-USERNAME/SynPV"
+authors:
+  - family-names: "FAMILY-NAME"
+    given-names: "GIVEN-NAME"
+keywords:
+  - photovoltaics
+  - synthetic data
+  - NASA POWER
+  - pvlib
+  - solar variability
+preferred-citation:
+  type: conference-paper
+  title: "SynPV: A Physics-Based Synthetic Dataset of Residential Rooftop PV Generation with Spatially Correlated Cloud Variability"
+  authors:
+    - family-names: "FAMILY-NAME"
+      given-names: "GIVEN-NAME"
+  collection-title: "Proceedings of the IEEE Texas Power and Energy Conference (TPEC)"
+  year: 2027

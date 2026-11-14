@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SynPV generator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%2313314f'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='%23f0a93b'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app">
+  <main class="stage" id="stage">
+    <div id="globe" class="globe" role="application" aria-label="Interactive globe. Click a point to choose the site."></div>
+
+    <div class="readout empty" id="readout" aria-live="polite">
+      <p class="coords"><span id="latText">--</span><span id="lonText">--</span></p>
+      <p class="place" id="placeText">Click anywhere on Earth to choose a site</p>
+      <p class="sitemeta" id="metaText"></p>
+    </div>
+    <p class="hint">Drag to rotate, scroll to zoom, click to choose a site.</p>
+
+    <!-- results replace the globe when a run has finished -->
+    <section class="results" id="results" hidden aria-labelledby="resTitle">
+      <div class="results-inner">
+        <div class="results-head">
+          <div>
+            <h2 id="resTitle">Dataset ready</h2>
+            <p class="res-sub" id="resSub"></p>
+          </div>
+          <div class="res-actions">
+            <a class="btn btn-primary" id="zipLink" href="#">Download dataset (.zip)</a>
+            <button type="button" class="btn btn-ghost" id="backGlobe">Back to the globe</button>
+          </div>
+        </div>
+        <dl class="kpis" id="kpis"></dl>
+        <div class="res-grid">
+          <div>
+            <h3>Validation checks</h3>
+            <ul class="checks" id="checks"></ul>
+          </div>
+          <div>
+            <h3>Files</h3>
+            <ul class="files" id="files"></ul>
+          </div>
+        </div>
+        <h3>Figures</h3>
+        <div class="figs" id="figs"></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="panel" aria-label="Generator settings">
+    <header class="brand">
+      <h1>SynPV</h1>
+      <p>Synthetic residential PV fleet data from NASA POWER weather, for any place on Earth.</p>
+    </header>
+
+    <!-- ===================== settings ===================== -->
+    <form id="setup" class="setup" novalidate>
+      <fieldset class="step">
+        <legend><span class="num" aria-hidden="true">1</span>Location</legend>
+        <div class="search">
+          <label for="q" class="sr-only">Search a place</label>
+          <input id="q" type="search" placeholder="Search a city or address" autocomplete="off">
+          <button type="button" class="btn btn-small" id="searchBtn">Search</button>
+        </div>
+        <ul class="hits" id="hits" hidden></ul>
+        <div class="row2">
+          <label>Latitude<span class="unit-wrap"><input id="lat" type="number" step="0.0001" min="-90" max="90" required><span class="unit">&deg;</span></span></label>
+          <label>Longitude<span class="unit-wrap"><input id="lon" type="number" step="0.0001" min="-180" max="180" required><span class="unit">&deg;</span></span></label>
+        </div>
+        <label>Site name<input id="siteName" type="text" placeholder="Filled in from the map"></label>
+      </fieldset>
+
+      <fieldset class="step">
+        <legend><span class="num" aria-hidden="true">2</span>Period and fleet</legend>
+        <div class="row2">
+          <label>Start date<input id="start" type="date" required></label>
+          <label>End date<input id="end" type="date" required></label>
+        </div>
+        <div class="row3">
+          <label>Houses<input id="nHouses" type="number" min="1" max="1000" step="1"></label>
+          <label>With PV<span class="unit-wrap"><input id="pvShare" type="number" min="1" max="100" step="1"><span class="unit">%</span></span></label>
+          <label>Resolution<select id="freq"><option value="1">1 min</option><option value="5" selected>5 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option></select></label>
+        </div>
+        <div class="row2">
+          <label>Neighbourhood size<span class="unit-wrap"><input id="area" type="number" min="0.5" max="20" step="0.5"><span class="unit">km</span></span></label>
+          <label>Random seed<input id="seed" type="number" step="1"></label>
+        </div>
+      </fieldset>
+
+      <details class="advanced">
+        <summary>Advanced settings</summary>
+        <div class="adv-body">
+          <p class="note">Leave a field empty to let SynPV derive it from the location and its weather.</p>
+          <div class="row2">
+            <label>Median system size<span class="unit-wrap"><input id="kwMed" type="number" min="1" max="50" step="0.5"><span class="unit">kW</span></span></label>
+            <label>Max system voltage<select id="vmax"><option value="600">600 V (US NEC)</option><option value="1000">1000 V (IEC)</option><option value="1500">1500 V</option></select></label>
+          </div>
+          <div class="row2">
+            <label>DC/AC ratio, min<input id="dcacLo" type="number" min="0.8" max="2" step="0.01"></label>
+            <label>DC/AC ratio, max<input id="dcacHi" type="number" min="0.8" max="2" step="0.01"></label>
+          </div>
+          <div class="row2">
+            <label>Tilt, min<span class="unit-wrap"><input id="tiltLo" type="number" min="0" max="90" step="1"><span class="unit">&deg;</span></span></label>
+            <label>Tilt, max<span class="unit-wrap"><input id="tiltHi" type="number" min="0" max="90" step="1"><span class="unit">&deg;</span></span></label>
+          </div>
+          <div class="row2">
+            <label>Design minimum temperature<span class="unit-wrap"><input id="tmin" type="number" step="1" placeholder="auto"><span class="unit">&deg;C</span></span></label>
+            <label>Clouds move from<span class="unit-wrap"><input id="cloudFrom" type="number" min="0" max="359" step="1" placeholder="auto"><span class="unit">&deg;</span></span></label>
+          </div>
+          <div class="row2">
+            <label>Ground albedo<input id="albedo" type="number" min="0" max="0.9" step="0.05"></label>
+            <label>Elevation<span class="unit-wrap"><input id="alt" type="number" step="1" placeholder="auto"><span class="unit">m</span></span></label>
+          </div>
+          <label class="check"><input id="meter" type="checkbox" checked> Add metering artefacts (noise, gaps, outages, curtailment)</label>
+          <label class="check"><input id="pvwatts" type="checkbox" checked> Compare with the NREL PVWatts v5 benchmark</label>
+          <label class="check"><input id="gt" type="checkbox" checked> Export ground-truth arrays (larger files)</label>
+          <label class="check"><input id="synth" type="checkbox"> Use synthetic weather if NASA POWER is unreachable (testing only)</label>
+        </div>
+      </details>
+
+      <div class="runbar">
+        <p class="estimate" id="estimate"></p>
+        <p class="form-error" id="formError" role="alert" hidden></p>
+        <button type="submit" class="btn btn-primary btn-wide" id="runBtn">Generate dataset</button>
+        <button type="button" class="btn btn-link" id="paperBtn">Load the paper case study (Levittown, NY, 2024)</button>
+      </div>
+    </form>
+
+    <!-- ===================== progress ===================== -->
+    <section class="progress" id="progress" hidden aria-live="polite">
+      <h2 id="progTitle">Generating</h2>
+      <p class="prog-sub" id="progSub"></p>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="bar"><span id="barFill"></span></div>
+      <ol class="steps" id="steps"></ol>
+      <p class="form-error" id="runError" role="alert" hidden></p>
+      <div class="prog-actions">
+        <button type="button" class="btn btn-ghost" id="cancelBtn">Cancel</button>
+        <button type="button" class="btn btn-ghost" id="newBtn" hidden>Change settings</button>
+      </div>
+      <details class="log" id="logBox">
+        <summary>Console output</summary>
+        <pre id="log"></pre>
+      </details>
+    </section>
+
+    <footer class="foot">
+      <p>Weather: <a href="https://power.larc.nasa.gov" target="_blank" rel="noopener">NASA POWER</a>. Place search: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. Version {{ version }}.</p>
+    </footer>
+  </aside>
+</div>
+
+<dialog id="lightbox" aria-label="Figure">
+  <form method="dialog"><button class="btn btn-ghost lb-close" aria-label="Close">Close</button></form>
+  <img id="lbImg" alt="">
+  <p id="lbCap"></p>
+</dialog>
+
+<script src="{{ url_for('static', filename='vendor/globe.gl.min.js') }}"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

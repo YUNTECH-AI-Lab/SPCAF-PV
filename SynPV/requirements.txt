@@ -1,0 +1,8 @@
+numpy>=1.22
+pandas>=1.5
+scipy>=1.8
+matplotlib>=3.6
+pvlib>=0.10
+requests>=2.25
+flask>=2.2
+timezonefinder>=6.0

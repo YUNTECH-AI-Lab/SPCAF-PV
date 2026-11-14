@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "synpv"
+version = "1.0.0"
+description = "Physics-based synthetic residential PV fleet generator driven by NASA POWER weather, with an interactive globe for choosing the site."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [{ name = "SynPV authors" }]
+keywords = ["photovoltaics", "synthetic data", "pvlib", "NASA POWER", "solar variability",
+            "behind-the-meter", "distributed energy resources", "dataset"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Scientific/Engineering :: Atmospheric Science",
+]
+dependencies = [
+  "numpy>=1.22",
+  "pandas>=1.5",
+  "scipy>=1.8",
+  "matplotlib>=3.6",
+  "pvlib>=0.10",
+  "requests>=2.25",
+  "flask>=2.2",
+  "timezonefinder>=6.0",
+]
+
+[project.optional-dependencies]
+yaml = ["pyyaml>=6"]
+test = ["pytest>=7"]
+
+[project.scripts]
+synpv = "synpv.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/YOUR-USERNAME/SynPV"
+Issues = "https://github.com/YOUR-USERNAME/SynPV/issues"
+
+[tool.setuptools.packages.find]
+include = ["synpv*"]
+
+[tool.setuptools.package-data]
+synpv = ["webapp/templates/*.html", "webapp/static/*.css", "webapp/static/*.js",
+         "webapp/static/vendor/*", "webapp/static/img/*", "webapp/static/fonts/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,12 @@
+{
+  "LATITUDE": 48.1374,
+  "LONGITUDE": 11.5755,
+  "SITE_NAME": "Munich, Germany",
+  "START_DATE": "2023-01-01",
+  "END_DATE": "2023-12-31",
+  "N_HOUSES": 80,
+  "PV_OWNERSHIP": 0.5,
+  "VDC_ABS_MAX": 1000.0,
+  "SYSTEM_KW_MEDIAN": 8.0,
+  "OUTPUT_DIR": "sim_output_munich_2023"
+}
